@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid'
-import { getCurrentLocation } from "../../tools/location";
+import { getCurrentLocation } from "../../tools/LocationTools";
 import { Alert } from "react-native";
 
 export const AddTask_Thunk = createAsyncThunk(
@@ -32,6 +32,27 @@ export const AddTask_Thunk = createAsyncThunk(
 
     } catch (error) {
       console.error('Error al agregar la tarea:', error.message)
+      return rejectWithValue({})
+    }
+  }
+)
+
+export const GetTasks_Thunk = createAsyncThunk(
+  'location/getTasks',
+  async (props, { rejectWithValue }) => {
+    try {
+      const wholeTasks = JSON.parse(await AsyncStorage.getItem('wholeTasks')) || []
+      const completedTasks = wholeTasks.filter(eachTask => eachTask.status == "done")
+      const pendingTasks = wholeTasks.filter(eachTask => eachTask.status == "pending")
+      // console.log('wholeTasks:', wholeTasks)
+
+      return {
+        completedTasks,
+        pendingTasks,
+        wholeTasks
+      }
+    } catch (error) {
+      console.error('Error obtener las tareas:', error.message)
       return rejectWithValue({})
     }
   }

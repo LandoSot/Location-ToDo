@@ -1,12 +1,17 @@
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { useDispatch } from 'react-redux';
 import MapLocation from '../components/Map';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import NavButtons from '../components/NavButtons';
+import { GetTasks_Thunk } from '../redux/thunks/Tasks';
 
 const Dashboard = () => {
+  const dispatch = useDispatch()
+
+  React.useEffect(() => {
+    dispatch(GetTasks_Thunk({}))
+  }, [])
+
   return (
     <View style={styles.container}>
       <MapLocation />

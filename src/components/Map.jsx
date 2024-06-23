@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { useSelector } from "react-redux";
-import { selectLocation } from "../redux/slices/Location";
-import { getCurrentLocation } from "../tools/location";
+import { selectLocation } from "../redux/slices/LocationSlice";
+import { getCurrentLocation } from "../tools/LocationTools";
 
 const MapLocation = ({ origin = 'dashboard' }) => {
   const { taskLocation, taskCoords } = useSelector(selectLocation)
@@ -11,8 +11,10 @@ const MapLocation = ({ origin = 'dashboard' }) => {
   const [currentLocation, setCurrentLocation] = useState({
     longitude: 0,
     latitude: 0,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421
+    latitudeDelta: 0.005,
+    longitudeDelta: 0.01
+    // latitudeDelta: 0.0922,
+    // longitudeDelta: 0.0421
   })
 
   async function setLocation() {
@@ -32,14 +34,14 @@ const MapLocation = ({ origin = 'dashboard' }) => {
       <View
         style={{
           ...styles.mapContainer,
-          height: origin == "dashboard" ? winHeight * 0.6 : 200,
-          width: winWidth * 0.94,
+          height: origin == "dashboard" ? winHeight * 0.55 : 200,
+          width: winWidth * 0.9,
         }}
       >
         {
           <MapView
             style={{
-              height: origin == "dashboard" ? winHeight * 0.6 : 200,
+              height: origin == "dashboard" ? winHeight * 0.55 : 200,
               width: winWidth * 0.94
             }}
             initialRegion={(taskCoords && origin == "newTask") ? taskLocation : currentLocation}

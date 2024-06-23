@@ -1,9 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { AddTask_Thunk } from "../thunks/Tasks";
+import { AddTask_Thunk, GetTasks_Thunk } from "../thunks/Tasks";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { v4 as uuidv4 } from 'uuid'
-import { getCurrentLocation } from "../../tools/location";
+import { getCurrentLocation } from "../../tools/LocationTools";
 import { Alert } from "react-native";
 
 
@@ -13,6 +13,7 @@ const initialState = {
   taskCoords: false,
   wholeTasks: [],
   pendingTasks: [],
+  completedTasks: [],
   currentLocation: {
     longitude: 0,
     latitude: 0,
@@ -54,6 +55,18 @@ const locationSlice = createSlice({
         state.isLoading = false
       })
       .addCase(AddTask_Thunk.rejected, state => {
+        state.isLoading = false
+      })
+      .addCase(GetTasks_Thunk.pending, state => {
+        state.isLoading = true
+      })
+      .addCase(GetTasks_Thunk.fulfilled, (state, action) => {
+        state.completedTasks = action.payload.completedTasks
+        state.pendingTasks = action.payload.pendingTasks
+        state.wholeTasks = action.payload.wholeTasks
+        state.isLoading = false
+      })
+      .addCase(GetTasks_Thunk.rejected, state => {
         state.isLoading = false
       })
   }

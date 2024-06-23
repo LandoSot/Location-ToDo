@@ -11,12 +11,18 @@ const NavButtons = () => {
   return (
     <View style={styles.container}>
       <View style={styles.multibuttons}>
-        <TouchableOpacity style={{ ...styles.tasksButtons, backgroundColor: colors.primary, }}>
+        <TouchableOpacity
+          style={{ ...styles.tasksButtons, backgroundColor: colors.primary }}
+          onPress={() => navigation.navigate('PendingTasks')}
+        >
           <FontAwesome5 name="tasks" size={35} color={colors.onPrimary} />
           <Text style={{ ...styles.tasksTitles, color: colors.onPrimary, }}>Pendientes</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={{ ...styles.tasksButtons, backgroundColor: colors.primary, }}>
+        <TouchableOpacity
+          style={{ ...styles.tasksButtons, backgroundColor: colors.primary }}
+          onPress={() => navigation.navigate('DoneList')}
+        >
           <MaterialIcons name="history-edu" size={40} color={colors.onPrimary} />
           <Text style={{ ...styles.tasksTitles, color: colors.onPrimary, }}>Historial</Text>
         </TouchableOpacity>

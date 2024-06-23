@@ -2,14 +2,15 @@ import React, { useState } from "react";
 import { useWindowDimensions, StatusBar, StyleSheet } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { useDispatch, useSelector } from "react-redux";
-import { selectLocation, setTaskLocation } from "../../redux/slices/Location";
+import { selectLocation, setTaskLocation } from "../../redux/slices/LocationSlice";
 import { FAB } from "react-native-paper";
 import { Feather } from '@expo/vector-icons';
-import { getCurrentLocation } from "../../tools/location";
+import { getCurrentLocation } from "../../tools/LocationTools";
 
 const MapTaskLocation = ({ navigation }) => {
   const { height: winHeight, width: winWidth } = useWindowDimensions()
   const { taskCoords, taskLocation } = useSelector(selectLocation)
+  const [region, setRegion] = useState()
   const [currentLocation, setCurrentLocation] = useState({
     longitude: 0,
     latitude: 0,
@@ -20,7 +21,12 @@ const MapTaskLocation = ({ navigation }) => {
 
   function handleMapPress(e) {
     const { coordinate } = e.nativeEvent;
-    dispatch(setTaskLocation(coordinate))
+
+    dispatch(setTaskLocation({
+      ...coordinate,
+      latitudeDelta: region.latitudeDelta,
+      longitudeDelta: region.longitudeDelta,
+    }))
   }
 
   async function setLocation() {
@@ -48,6 +54,7 @@ const MapTaskLocation = ({ navigation }) => {
         region={taskCoords ? taskLocation : currentLocation}
         showsUserLocation={true}
         onPress={handleMapPress}
+        onRegionChange={region => setRegion(region)}
       >
         <Marker
           coordinate={{

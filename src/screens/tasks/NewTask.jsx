@@ -6,7 +6,7 @@ import * as yup from "yup";
 import MapLocation from "../../components/Map";
 import { InputStyles } from "../../styles/Theme";
 import { useDispatch, useSelector } from "react-redux";
-import { resetTaskLocation, selectLocation } from "../../redux/slices/Location";
+import { resetTaskLocation, selectLocation } from "../../redux/slices/LocationSlice";
 import { AddTask_Thunk } from "../../redux/thunks/Tasks";
 
 const NewTask = ({ navigation }) => {

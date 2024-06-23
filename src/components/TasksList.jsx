@@ -38,7 +38,10 @@ const TasksList = ({ showType = "pending" }) => {
                 <Text style={{ width: '40%', backgroundColor: bgColorDictionary[task.status], borderBottomRightRadius: 5, paddingTop: '2%' }}>  Estatus: Pendiente</Text>
               </View>
 
-              <View></View>
+              <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderTopLeftRadius: 5, borderTopRightRadius: 5 }}>
+                <Text style={{ fontWeight: 'bold' }}>  Notificated: </Text>
+                <Text>  {`${task.notificated}`}</Text>
+              </View>
             </View>
           )}
         /> :

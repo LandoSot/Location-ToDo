@@ -18,7 +18,8 @@ export const AddTask_Thunk = createAsyncThunk(
         longitude: taskLocation.longitude || currentLocation.longitude,
         taskId: uuidv4(),
         status: 'pending',
-        activationTimestamp: null
+        activationTimestamp: null,
+        notificated: false
       }
 
       const updatedWholeTasks = [...wholeTasks]
@@ -53,6 +54,33 @@ export const GetTasks_Thunk = createAsyncThunk(
       }
     } catch (error) {
       console.error('Error obtener las tareas:', error.message)
+      return rejectWithValue({})
+    }
+  }
+)
+
+export const UpdateTasks_Thunk = createAsyncThunk(
+  'location/updateTasks',
+  async (props, { rejectWithValue, getState }) => {
+    try {
+      const { location: { wholeTasks } } = getState()
+      const { newPendingTasks } = props;
+      const updatedTasksMap = new Map(newPendingTasks.map(task => [task.taskId, task]));
+
+      const updatedWholeTasks = wholeTasks.map(task =>
+        updatedTasksMap.has(task.taskId)
+          ? { ...task, ...updatedTasksMap.get(task.taskId) }
+          : task
+      );
+
+      await AsyncStorage.setItem('wholeTasks', JSON.stringify(updatedWholeTasks))
+
+      return {
+        wholeTasks: updatedWholeTasks,
+        pendingTasks: newPendingTasks
+      }
+    } catch (error) {
+      console.error('Error actualizar las tareas:', error.message)
       return rejectWithValue({})
     }
   }

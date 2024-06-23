@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { AddTask_Thunk, GetTasks_Thunk } from "../thunks/Tasks";
+import { AddTask_Thunk, GetTasks_Thunk, UpdateTasks_Thunk } from "../thunks/Tasks";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { v4 as uuidv4 } from 'uuid'
@@ -67,6 +67,17 @@ const locationSlice = createSlice({
         state.isLoading = false
       })
       .addCase(GetTasks_Thunk.rejected, state => {
+        state.isLoading = false
+      })
+      .addCase(UpdateTasks_Thunk.pending, state => {
+        state.isLoading = true
+      })
+      .addCase(UpdateTasks_Thunk.fulfilled, (state, action) => {
+        state.pendingTasks = action.payload.pendingTasks
+        state.wholeTasks = action.payload.wholeTasks
+        state.isLoading = false
+      })
+      .addCase(UpdateTasks_Thunk.rejected, state => {
         state.isLoading = false
       })
   }

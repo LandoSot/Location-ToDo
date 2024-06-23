@@ -7,6 +7,7 @@ import Store from "./src/redux/Store";
 import { NavigationContainer } from '@react-navigation/native';
 import DashboardStack from './src/navigation/Stack';
 import { CustomDefaultTheme } from './src/styles/Theme';
+import SplashModal from './src/components/SplashModal';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
       <NavigationContainer>
         <PaperProvider theme={CustomDefaultTheme}>
           <DashboardStack />
+          <SplashModal/>
         </PaperProvider>
       </NavigationContainer>
     </ReduxProvider>

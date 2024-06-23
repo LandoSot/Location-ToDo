@@ -2,7 +2,7 @@ import * as Location from "expo-location"
 import * as TaskManager from "expo-task-manager"
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants from "expo-constants"; // Optional
+import Constants from "expo-constants";
 import * as Geolib from 'geolib'
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import moment from "moment"
@@ -99,11 +99,10 @@ export async function setForegroundTracking(location) {
 
           newPendingTasks.push({
             ...task,
-            // notificated: true,
+            notificated: true,
+            status: 'done',
             activationTimestamp: moment().format("DD/MM/YYYY HH:mm")
           });
-          // console.log('Tarea:', task.name)
-          // console.log('Descripción:', task.description)
         } else {
           newPendingTasks.push(task)
         }
@@ -118,35 +117,46 @@ export async function setForegroundTracking(location) {
 
 export async function setBackgroundTracking() {
   try {
+    const wholeTasks = JSON.parse(await AsyncStorage.getItem('wholeTasks')) || []
+    const pendingTasks = wholeTasks.filter(eachTask => eachTask.status == "pending")
+
+    const isBgTaskRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME)
+    console.log('isBgTaskRegistered:', isBgTaskRegistered)
+    console.log('pendingTasks.length:', pendingTasks.length)
+
+    if (!pendingTasks.length && isBgTaskRegistered) {
+      await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
+      console.log('>>> Background Tracking Removed')
+    } else {
+      await startBgTask()
+    }
+  } catch (error) {
+    console.log('Error setBackgroundTracking:', error.message)
+  }
+}
+
+export async function startBgTask() {
+  try {
+    const isBgTaskRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME)
     const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
-    console.log('backgroundStatus:', backgroundStatus)
 
     if (backgroundStatus !== 'granted') {
       console.error('Permisos de ubicación en segundo plano no otorgados');
       return;
     }
 
-    const isBgTaskRegistered = await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME)
-
     if (!isBgTaskRegistered) {
       await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
         accuracy: Location.Accuracy.High,
         distanceInterval: 1, // Actualiza cada metro
         deferredUpdatesInterval: 1000, // Actualiza cada segundo
-        showsBackgroundLocationIndicator: true,
-        pausesUpdatesAutomatically: false,
-        foregroundService: {
-          notificationTitle: 'Location ToDo',
-          notificationBody: 'La aplicación está monitoreando tu ubicación.',
-          notificationColor: '#ffffff'
-        }
+        showsBackgroundLocationIndicator: false, // No muestra indicador en primer plano
+        pausesUpdatesAutomatically: true, // Pausa automáticamente en primer plano
       })
-        .then(() => console.log('>>> Background Tracking registered'))
-    } else {
-      console.log(`>>> La tarea ${LOCATION_TASK_NAME} ya se encuentra registrada`)
+        .then(() => console.log('>>> Background Tracking Registered'))
     }
   } catch (error) {
-    console.log('Error setBackgroundTracking:', error.message)
+    console.log('Error startBgTask:', error.message)
   }
 }
 
@@ -195,6 +205,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
           newPendingTasks.push({
             ...task,
             notificated: true,
+            status: "done",
             activationTimestamp: moment().format("DD/MM/YYYY HH:mm")
           });
         } else {

@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid'
-import { getCurrentLocation } from "../../tools/LocationTools";
+import { getCurrentLocation, startBgTask } from "../../tools/LocationTools";
 import { Alert } from "react-native";
 
 export const AddTask_Thunk = createAsyncThunk(
@@ -29,6 +29,7 @@ export const AddTask_Thunk = createAsyncThunk(
       navigation.navigate('Dashboard')
       Alert.alert('Nueva Tarea', 'La nueva tarea a sido registrada exitosamente')
 
+      startBgTask()
       return updatedWholeTasks
 
     } catch (error) {
@@ -45,7 +46,6 @@ export const GetTasks_Thunk = createAsyncThunk(
       const wholeTasks = JSON.parse(await AsyncStorage.getItem('wholeTasks')) || []
       const completedTasks = wholeTasks.filter(eachTask => eachTask.status == "done")
       const pendingTasks = wholeTasks.filter(eachTask => eachTask.status == "pending")
-      // console.log('wholeTasks:', wholeTasks)
 
       return {
         completedTasks,
@@ -81,6 +81,40 @@ export const UpdateTasks_Thunk = createAsyncThunk(
       }
     } catch (error) {
       console.error('Error actualizar las tareas:', error.message)
+      return rejectWithValue({})
+    }
+  }
+)
+
+export const ToggleTaskStatus_Thunk = createAsyncThunk(
+  'location/taskStatus',
+  async (props, { rejectWithValue, getState }) => {
+    try {
+      const { task, action } = props
+      const { location: { wholeTasks } } = getState()
+
+      const updatedWholeTasks = wholeTasks.map(eachTask => {
+        if (eachTask.taskId == task.taskId) {
+          console.log('ENTRO AL IF')
+          return {
+            ...eachTask,
+            status: action == 'complete' ? 'done' : 'pending',
+            notificated: action == 'complete' ? true : false,
+            activationTimestamp: action == 'complete' ? eachTask.activationTimestamp : null,
+          }
+        } else {
+          return eachTask
+        }
+      })
+
+      const completedTasks = updatedWholeTasks.filter(eachTask => eachTask.status == "done")
+      const pendingTasks = updatedWholeTasks.filter(eachTask => eachTask.status == "pending")
+
+      await AsyncStorage.setItem('wholeTasks', JSON.stringify(updatedWholeTasks))
+
+      return { pendingTasks, completedTasks, updatedWholeTasks }
+    } catch (error) {
+      console.error('Error ToggleTaskStatus_Thunk:', error.message)
       return rejectWithValue({})
     }
   }

@@ -1,33 +1,65 @@
 import React, { useState } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectLocation } from "../redux/slices/LocationSlice";
-import { getCurrentLocation } from "../tools/LocationTools";
+import { getCurrentLocation, setBackgroundTracking, setForegroundTracking } from "../tools/LocationTools";
+import * as Location from "expo-location";
+import { UpdateTasks_Thunk } from "../redux/thunks/Tasks";
 
 const MapLocation = ({ origin = 'dashboard' }) => {
-  const { taskLocation, taskCoords } = useSelector(selectLocation)
+  let subscription
+  const dispatch = useDispatch()
+  const { taskLocation, taskCoords, pendingTasks } = useSelector(selectLocation)
   const { height: winHeight, width: winWidth } = useWindowDimensions()
   const [currentLocation, setCurrentLocation] = useState({
     longitude: 0,
     latitude: 0,
     latitudeDelta: 0.005,
     longitudeDelta: 0.01
-    // latitudeDelta: 0.0922,
-    // longitudeDelta: 0.0421
   })
 
+  const locParams = {
+    accuracy: Location.Accuracy.High,
+    timeInterval: 1000,
+    distanceInterval: 1
+  }
+
   async function setLocation() {
-    const location = await getCurrentLocation()
-    setCurrentLocation({
-      ...currentLocation,
-      ...location
-    })
+    try {
+      const coords = await getCurrentLocation()
+      setCurrentLocation({ ...currentLocation, ...coords })
+
+      subscription = await Location.watchPositionAsync(locParams,
+        async (location) => {
+          const { updateTasks, newPendingTasks } = await setForegroundTracking(location)
+
+          if (updateTasks)
+            dispatch(UpdateTasks_Thunk({ newPendingTasks }))
+
+          setCurrentLocation({ ...currentLocation, ...coords })
+        })
+
+      await setBackgroundTracking()
+    } catch (error) {
+      console.log('Error setLocation:', error.message)
+    }
   }
 
   React.useEffect(() => {
     setLocation()
+
+    return () => {
+      if (subscription) {
+        console.log('removed')
+        subscription.remove()
+      }
+    }
   }, [])
+
+  // React.useEffect(() => {
+  //   console.log("currentLocation:", currentLocation)
+  // }, [currentLocation])
 
   return (
     <View style={{ ...styles.container }}>

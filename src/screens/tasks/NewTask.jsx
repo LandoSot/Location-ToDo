@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Keyboard, ScrollView, StyleSheet, View } from "react-native";
 import { Formik } from "formik";
 import * as yup from "yup";
 import MapLocation from "../../components/Map";
@@ -12,6 +12,7 @@ import { AddTask_Thunk } from "../../redux/thunks/Tasks";
 const NewTask = ({ navigation }) => {
   const { colors } = useTheme()
   const { taskCoords } = useSelector(selectLocation)
+  const inputsRef = React.useRef(Array(3))
   const dispatch = useDispatch()
 
   const initialValues = {
@@ -48,6 +49,10 @@ const NewTask = ({ navigation }) => {
                 <Text style={{ marginLeft: '1%', color: colors.error }}>*</Text>
               </View>
               <TextInput
+                ref={input => inputsRef.current[0] = input}
+                returnKeyType={'next'}
+                blurOnSubmit={false}
+                onSubmitEditing={() => inputsRef.current[1].focus()}
                 value={values.name}
                 placeholder={"Recoger mascota"}
                 onChangeText={value => setFieldValue('name', value)}
@@ -64,6 +69,7 @@ const NewTask = ({ navigation }) => {
               </View>
               <TextInput
                 {...InputStyles}
+                ref={input => inputsRef.current[1] = input}
                 style={{ height: 150 }}
                 value={values.description}
                 multiline={true}
@@ -80,6 +86,10 @@ const NewTask = ({ navigation }) => {
                 <Text style={{ marginLeft: '1%', color: colors.error }}>*</Text>
               </View>
               <TextInput
+                ref={input => inputsRef.current[2] = input}
+                returnKeyType={'next'}
+                blurOnSubmit={false}
+                onSubmitEditing={() => Keyboard.dismiss()}
                 value={values.distance}
                 placeholder={"100"}
                 onChangeText={value => setFieldValue('distance', value)}
